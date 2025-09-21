@@ -1,115 +1,176 @@
-import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
+"use client";
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
+import { getToken } from "next-auth/jwt";
+import type { GetServerSideProps } from "next";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+import { DashboardLayout } from "@/components/layout/dashboard";
+import { Sidebar, type NavItem } from "@/components/layout/sidebar";
+import {
+  Activity,
+  Category,
+  ChartSquare,
+  Home,
+  HomeHashtag,
+  Refresh2,
+  SearchNormal1,
+} from "iconsax-reactjs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { InputWithIcon } from "@/components/iconInput";
+import { getInitials } from "@/lib/utils";
+import { Kpis } from "@/components/kpis";
+import { DataTable } from "@/components/data-table";
+import { columns, type Lead } from "@/components/columns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const NICHES = [
+  { label: "Content Marketing", gid: "0" },
+  { label: "Paid Ads", gid: "994785354" },
+];
 
-export default function Home() {
-  return (
-    <div
-      className={`${geistSans.className} ${geistMono.className} font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20`}
-    >
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/pages/index.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const token = await getToken({
+    req: ctx.req,
+    secret: process.env.NEXTAUTH_SECRET,
+  });
+  if (!token) {
+    const callbackUrl = encodeURIComponent(ctx.resolvedUrl || "/");
+    return {
+      redirect: {
+        destination: `/sign-in?callbackUrl=${callbackUrl}`,
+        permanent: false,
+      },
+    };
+  }
+  return { props: {} };
+};
+
+const NAV: NavItem[] = [
+  { label: "Overview", href: "/", icon: HomeHashtag, size: 20 },
+  { label: "Insights", href: "/graphs", icon: Activity, size: 20 },
+];
+
+export default function Page() {
+  const { data: session } = useSession();
+  const [q, setQ] = useState("");
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedGid, setSelectedGid] = useState<string>(NICHES[0].gid);
+
+  const fetchLeads = useCallback(async (gid: string) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/leads?gid=${gid}&ts=${Date.now()}`, {
+        cache: "no-store",
+      });
+      const { leads } = await res.json();
+      setLeads(leads);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLeads(selectedGid);
+  }, [fetchLeads]);
+
+  const name = session?.user?.name || "";
+  const email = session?.user?.email || "";
+  const initials = getInitials(name, email);
+  const emailPrefix = email ? email.split("@")[0] : "";
+
+  const headerRight = (
+    <>
+      {/* Search */}
+      <InputWithIcon
+        value={q}
+        onChange={(e: any) => setQ(typeof e === "string" ? e : e.target.value)}
+        placeholder="Search name, email, company…"
+        className="w-[260px]"
+        icon={<SearchNormal1 variant="Linear" size={15} color="#292929" />}
+      />
+
+      {/* Niche select (same state 'gid') */}
+      <div className="flex items-center gap-2">
+        <Select
+          value={selectedGid}
+          onValueChange={(value) => fetchLeads(value)}
+        >
+          <SelectTrigger className="h-9 w-[200px] sm:w-[220px]">
+            <SelectValue placeholder="Select Niche" />
+          </SelectTrigger>
+          <SelectContent>
+            {NICHES.map((n) => (
+              <SelectItem key={n.gid} value={n.gid}>
+                {n.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        {/* Refresh with loading indicator */}
+        <Button
+          variant="ghost"
+          size="default"
+          onClick={() => fetchLeads(selectedGid)}
+          disabled={loading}
+          className="gap-2"
+        >
+          <Refresh2
+            variant="Bulk"
+            size={16}
+            className={loading ? "animate-spin-ease" : ""}
+          />
+          {loading ? "Loading…" : "Refresh"}
+        </Button>
+      </div>
+
+      {/* User */}
+      {session?.user ? (
+        <div className="flex items-center gap-x-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={""} alt={name} />
+            <AvatarFallback className="text-sm font-semibold">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="text-foreground text-[15px] font-medium">
+              {name || initials}
+            </p>
+            <p className="leading-3 text-foreground/80 text-xs font-medium">
+              {emailPrefix}@
+            </p>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+      ) : null}
+    </>
+  );
+
+  return (
+    <DashboardLayout nav={NAV} headerRight={headerRight} title="Dashboard">
+      {loading ? (
+        <div className="text-sm justify-center h-full items-center flex">
+          <Refresh2 size={32} variant="TwoTone" className="animate-spin-ease" />
+        </div>
+      ) : (
+        <>
+          <Kpis leads={leads} />
+          <DataTable
+            columns={columns}
+            data={leads}
+            globalFilter={q}
+            onGlobalFilterChange={setQ}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        </>
+      )}
+    </DashboardLayout>
   );
 }
