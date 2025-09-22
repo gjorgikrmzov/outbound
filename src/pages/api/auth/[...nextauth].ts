@@ -11,8 +11,8 @@ const allowedEmails = (process.env.ALLOWED_EMAILS || "")
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: "939273608083-7bcecd55mdat4992sj9mv6cbrol0plmu.apps.googleusercontent.com"!,
+      clientSecret: "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"!,
       authorization: {
         params: {
           prompt: "consent",
