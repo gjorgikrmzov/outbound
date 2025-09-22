@@ -1,17 +1,15 @@
 "use client";
-import { useState, PropsWithChildren } from "react";
+import { Sidebar } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
 import { Element3 } from "iconsax-reactjs";
-import { Sidebar, type NavItem } from "@/components/layout/sidebar";
+import { PropsWithChildren, useState } from "react";
 import { Separator } from "../ui/separator";
 
 export function DashboardLayout({
-  nav,
   headerRight,
   title = "Dashboard",
   children,
 }: PropsWithChildren<{
-  nav: NavItem[];
   headerRight?: React.ReactNode; // put search+avatar here
   title?: string;
 }>) {
@@ -22,7 +20,7 @@ export function DashboardLayout({
       <div className="flex h-full">
         {/* Sidebar desktop */}
         <aside className="hidden md:flex md:w-[260px] shrink-0">
-          <Sidebar items={nav} />
+          <Sidebar />
         </aside>
 
         {/* Sidebar mobile */}
@@ -33,7 +31,7 @@ export function DashboardLayout({
               onClick={() => setSidebarOpen(false)}
             />
             <aside className="absolute left-0 top-0 h-full w-[84%] max-w-[300px] bg-card border-r shadow-xl">
-              <Sidebar items={nav} onClose={() => setSidebarOpen(false)} />
+              <Sidebar onClose={() => setSidebarOpen(false)} />
             </aside>
           </div>
         )}

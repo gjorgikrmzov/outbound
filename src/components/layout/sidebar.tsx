@@ -4,7 +4,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { ArrowLeft2, LogoutCurve } from "iconsax-reactjs";
+import {
+  Activity,
+  ArrowLeft2,
+  HomeHashtag,
+  LogoutCurve,
+} from "iconsax-reactjs";
 import { signOut } from "next-auth/react";
 
 export type NavItem = {
@@ -15,16 +20,19 @@ export type NavItem = {
 };
 
 export function Sidebar({
-  items,
   onClose,
   title = "AA / Outbound",
 }: {
-  items: NavItem[];
   onClose?: () => void;
   title?: string;
 }) {
   const router = useRouter();
   const active = router.pathname;
+
+  const NAV: NavItem[] = [
+    { label: "Overview", href: "/", icon: HomeHashtag, size: 20 },
+    { label: "Insights", href: "/insights", icon: Activity, size: 20 },
+  ];
 
   return (
     <div className="flex h-full w-full flex-col bg-background border-r">
@@ -32,7 +40,12 @@ export function Sidebar({
       <div className="flex items-center justify-between h-18 px-6">
         <h3 className="font-medium">{title}</h3>
         {onClose ? (
-          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close menu">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close menu"
+          >
             <ArrowLeft2 size={18} />
           </Button>
         ) : null}
@@ -43,7 +56,7 @@ export function Sidebar({
       {/* Nav links */}
       <ScrollArea className="flex-1">
         <nav className="px-4 py-3 gap-y-1 flex flex-col">
-          {items.map(({ label, href, icon: Icon, size = 20 }) => {
+          {NAV.map(({ label, href, icon: Icon, size = 20 }) => {
             const isActive = active === href;
             return (
               <Link key={href} href={href} className="group">
@@ -60,7 +73,6 @@ export function Sidebar({
         </nav>
       </ScrollArea>
 
-
       {/* Sign out pinned to bottom */}
       <div className="px-4 py-3">
         <button
@@ -71,7 +83,6 @@ export function Sidebar({
           <span className="text-[15px] font-medium">Sign out</span>
         </button>
       </div>
-
     </div>
   );
 }

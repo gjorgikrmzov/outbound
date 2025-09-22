@@ -1,27 +1,16 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { getToken } from "next-auth/jwt";
 import type { GetServerSideProps } from "next";
+import { getToken } from "next-auth/jwt";
+import { useSession } from "next-auth/react";
+import { useCallback, useEffect, useState } from "react";
 
+import { columns, type Lead } from "@/components/columns";
+import { DataTable } from "@/components/data-table";
+import { InputWithIcon } from "@/components/iconInput";
+import { Kpis } from "@/components/kpis";
 import { DashboardLayout } from "@/components/layout/dashboard";
-import { Sidebar, type NavItem } from "@/components/layout/sidebar";
-import {
-  Activity,
-  Category,
-  ChartSquare,
-  Home,
-  HomeHashtag,
-  Refresh2,
-  SearchNormal1,
-} from "iconsax-reactjs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { InputWithIcon } from "@/components/iconInput";
-import { getInitials } from "@/lib/utils";
-import { Kpis } from "@/components/kpis";
-import { DataTable } from "@/components/data-table";
-import { columns, type Lead } from "@/components/columns";
 import {
   Select,
   SelectContent,
@@ -29,6 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getInitials } from "@/lib/utils";
+import { Refresh2, SearchNormal1 } from "iconsax-reactjs";
 
 const NICHES = [
   { label: "Content Marketing", gid: "0" },
@@ -52,11 +43,6 @@ export const getServerSideProps: GetServerSideProps = async (ctx) => {
   return { props: {} };
 };
 
-const NAV: NavItem[] = [
-  { label: "Overview", href: "/", icon: HomeHashtag, size: 20 },
-  { label: "Insights", href: "/graphs", icon: Activity, size: 20 },
-];
-
 export default function Page() {
   const { data: session } = useSession();
   const [q, setQ] = useState("");
@@ -79,7 +65,7 @@ export default function Page() {
 
   useEffect(() => {
     fetchLeads(selectedGid);
-  }, [fetchLeads]);
+  }, [fetchLeads, selectedGid]);
 
   const name = session?.user?.name || "";
   const email = session?.user?.email || "";
@@ -101,7 +87,7 @@ export default function Page() {
       <div className="flex items-center gap-2">
         <Select
           value={selectedGid}
-          onValueChange={(value) => fetchLeads(value)}
+          onValueChange={(value) => setSelectedGid(value)}
         >
           <SelectTrigger className="h-9 w-[200px] sm:w-[220px]">
             <SelectValue placeholder="Select Niche" />
@@ -155,7 +141,7 @@ export default function Page() {
   );
 
   return (
-    <DashboardLayout nav={NAV} headerRight={headerRight} title="Dashboard">
+    <DashboardLayout headerRight={headerRight} title="Dashboard">
       {loading ? (
         <div className="text-sm justify-center h-full items-center flex">
           <Refresh2 size={32} variant="TwoTone" className="animate-spin-ease" />
