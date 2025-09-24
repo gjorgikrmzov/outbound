@@ -54,7 +54,7 @@ export function Kpis({
         .length,
     [leads]
   );
-  const replyRate = sent > 0 ? Math.round((replies / sent) * 100) : 0;
+  const replyRate = sent > 0 ? (replies / sent * 100) : 0;
   const totalLeads = leads.length;
 
   return (
@@ -98,7 +98,7 @@ export function Kpis({
           <Stat
             icon={<Graph size={24} color="#292929" variant="Bulk" />}
             label="Reply Rate"
-            value={`${replyRate}%`}
+            value={`${replyRate.toFixed(2)}%`}
             // optional: trend for rate if you also compute previous rate
             sublabel="Replies / Sent"
           />

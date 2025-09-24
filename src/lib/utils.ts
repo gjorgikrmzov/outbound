@@ -1,10 +1,9 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
-
 
 export function getInitials(name?: string, email?: string) {
   if (name) {
@@ -15,3 +14,8 @@ export function getInitials(name?: string, email?: string) {
   if (email) return email[0]?.toUpperCase();
   return "?";
 }
+
+export const NICHES = [
+  { label: "Content Marketing", gid: "0" },
+  { label: "Paid Ads", gid: "994785354" },
+];

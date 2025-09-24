@@ -64,7 +64,7 @@ export function Sidebar({
                   className={`w-full flex items-center gap-x-4 rounded-xl px-3 py-3 transition-all
                     ${isActive ? "bg-accent" : "hover:bg-accent"}`}
                 >
-                  <Icon size={24} variant="Bulk" color="#292929" />
+                  <Icon size={24} variant={isActive ? "Bold" : "Bulk"} color="#292929" />
                   <span className="text-[15px] font-medium">{label}</span>
                 </div>
               </Link>

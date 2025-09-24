@@ -18,13 +18,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { getInitials } from "@/lib/utils";
+import { getInitials, NICHES } from "@/lib/utils";
 import { Refresh2, SearchNormal1 } from "iconsax-reactjs";
 
-const NICHES = [
-  { label: "Content Marketing", gid: "0" },
-  { label: "Paid Ads", gid: "994785354" },
-];
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
   const token = await getToken({
